@@ -1,0 +1,38 @@
+{
+  "family": "my-container-family",
+  "containerDefinitions": [
+    {
+      "name": "ubuntu-container",
+      "image": "ubuntu:latest",
+      "essential": true,
+      "command": ["sleep", "infinity"],
+      "memory": 512,
+      "cpu": 256
+    },
+    {
+      "name": "debian-container",
+      "image": "anchous0215/my-debian-sudo-script",
+      "essential": true,
+      "command": ["/usr/local/bin/script.sh"],
+      "memory": 512,
+      "cpu": 256
+    },
+    {
+      "name": "alpine-container",
+      "image": "alpine:latest",
+      "essential": true,
+      "command": ["sleep", "infinity"],
+      "memory": 512,
+      "cpu": 256
+    },
+    {
+      "name": "centos-container",
+      "image": "centos:7",
+      "essential": true,
+      "command": ["sleep", "infinity"],
+      "memory": 512,
+      "cpu": 256
+    }
+  ]
+}
+

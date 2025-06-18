@@ -1,0 +1,4 @@
+root:password
+admin:123456
+user:qwerty
+test:test

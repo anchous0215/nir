@@ -1,0 +1,12 @@
+kubectl logs  packet-capture -n study
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on eth0, link-type EN10MB (Ethernet), capture size 262144 bytes
+5 packets captured
+15:29:34.950920 IP 192.168.49.1.41902 > 192.168.49.2.8443: Flags [P.], seq 2794485961:2794486085, ack 1528077674, win 1049, options [nop,nop,TS val 3573949407 ecr 2169191602], length 124
+32 packets received by filter
+0 packets dropped by kernel
+15:29:34.951384 IP 192.168.49.2.8443 > 192.168.49.1.41902: Flags [P.], seq 1:37, ack 124, win 1089, options [nop,nop,TS val 2169201601 ecr 3573949407], length 36
+15:29:34.951419 IP 192.168.49.1.41902 > 192.168.49.2.8443: Flags [.], ack 37, win 1049, options [nop,nop,TS val 3573949407 ecr 2169201601], length 0
+15:29:35.387011 IP 192.168.49.1.40348 > 192.168.49.2.8443: Flags [S], seq 1415432161, win 64240, options [mss 1460,sackOK,TS val 3573949843 ecr 0,nop,wscale 7], length 0
+15:29:35.387041 IP 192.168.49.2.8443 > 192.168.49.1.40348: Flags [S.], seq 4109531939, ack 1415432162, win 65160, options [mss 1460,sackOK,TS val 2169202037 ecr 3573949843,nop,wscale 7], length 0
+ancho@mynotebook:/mnt/c/Users/ancho/study/ubuntu-2$

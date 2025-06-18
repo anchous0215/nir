@@ -1,0 +1,12 @@
+2025-05-05T14:57:09UTC exit: 0 TRIED: one
+[sudo] password for user: Sorry, try again.
+[sudo] password for user:
+sudo: no password was provided
+sudo: 1 incorrect password attempt
+2025-05-05T14:57:13UTC exit: 0 TRIED: two
+[sudo] password for user: Sorry, try again.
+[sudo] password for user:
+sudo: no password was provided
+sudo: 1 incorrect password attempt
+2025-05-05T14:57:17UTC exit: 0 TRIED: three
+2025-05-05T14:57:20UTC exit: 0 FOUND: sudo => password123
