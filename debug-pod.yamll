@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: debug-pod
+  namespace: logging  # Запускаем в том же неймспейсе для чистоты эксперимента
+spec:
+  containers:
+  - name: debugger
+    image: ubuntu:latest
+    # Команда, которая не дает поду завершиться, чтобы мы могли в него зайти
+    command: ["sleep", "infinity"]
+    # Даем этому поду тот же самый том, что и у Fluent Bit
+    volumeMounts:
+    - name: docker-logs-volume
+      mountPath: /data # Мы смонтируем логи в /data для удобства
+  volumes:
+  - name: docker-logs-volume
+    hostPath:
+      path: /var/lib/docker/containers # Тот самый путь с хоста

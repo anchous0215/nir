@@ -1,0 +1,150 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: debian-pod
+  namespace: study
+  labels:
+    app: study-attack
+spec:
+  containers:
+  - name: debian-container
+    image:  attack-container:debian
+    command: ["/usr/local/bin/script.sh"]
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: password-grep-attack
+  namespace: study
+spec:
+  containers:
+  - name: password-grep-attack
+    image: anchous0215/password-grep-attack
+    command: ["sh", "-c", "/usr/local/bin/attack.sh /"]
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sudo-bruteforce-pod
+  namespace: study
+spec:
+  containers:
+  - name: sudo-bruteforce-container
+    image: attack-image-sudo-bruteforce:latest
+    imagePullPolicy: Never
+  restartPolicy: OnFailure
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: grep-password-pod
+  namespace: study
+spec:
+  containers:
+  - name: grep-password-container
+    image: attack-image-grep-password:latest
+    imagePullPolicy: Never
+    command: ["/usr/local/bin/attack.sh", "/etc"] # Ищем в /etc
+  restartPolicy: OnFailure
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: packet-capture-pod
+  namespace: study
+spec:
+  containers:
+  - name: packet-capture-container
+    image: attack-image-packet-capture:latest
+    imagePullPolicy: Never
+    securityContext:
+      capabilities:
+        add: ["NET_ADMIN", "NET_RAW"] # Добавляем права для прослушивания
+  restartPolicy: OnFailure
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: chrome-cookie-theft-pod
+  namespace: study
+spec:
+  containers:
+  - name: chrome-cookie-theft-container
+    image: attack-image-chrome-cookie-theft:latest
+    imagePullPolicy: Never
+  restartPolicy: OnFailure
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ssh-bruteforce-pod
+  namespace: study
+spec:
+  containers:
+  - name: ssh-bruteforce-container
+    image: attack-image-ssh-bruteforce:latest
+    imagePullPolicy: Never
+  restartPolicy: OnFailure
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: find-netrc-pod
+  namespace: study
+spec:
+  containers:
+  - name: find-netrc-container
+    image: attack-image-find-netrc:latest
+    imagePullPolicy: Never
+  restartPolicy: OnFailure
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: compile-c-privileged-pod
+  namespace: study
+spec:
+  containers:
+  - name: compile-c-privileged-container
+    image: attack-image-compile-c-privileged:latest
+    imagePullPolicy: Never
+  restartPolicy: OnFailure
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dump-creds-lazagne-pod
+  namespace: study
+spec:
+  containers:
+  - name: dump-creds-lazagne-container
+    image: attack-image-dump-creds-lazagne:latest
+    imagePullPolicy: Never
+  restartPolicy: OnFailure
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pam-injection-emulation-pod
+  namespace: study
+spec:
+  containers:
+  - name: pam-injection-emulation-container
+    image: attack-image-pam-injection-emulation:latest
+    imagePullPolicy: Never
+  restartPolicy: OnFailure
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: privileged-c-pod
+  namespace: study
+spec:
+  containers:
+  - name: privileged-c-container
+    image: attack-image-privileged-c:latest
+    imagePullPolicy: Never
+  restartPolicy: OnFailure
