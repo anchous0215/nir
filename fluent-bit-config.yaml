@@ -43,7 +43,6 @@ data:
         Match               *
         Regex               kubernetes['namespace_name'] ^study$
 
-    # ========== ВОТ КЛЮЧЕВОЕ ИЗМЕНЕНИЕ ==========
     # Возвращаем вывод в стандартный поток (консоль пода Fluent Bit)
     [OUTPUT]
         Name        loki
