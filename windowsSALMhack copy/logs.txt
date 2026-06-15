@@ -1,3 +1,0 @@
-Successfully connected as user@example.com
-
-End of Golden SAML
