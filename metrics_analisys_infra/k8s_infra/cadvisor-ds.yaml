@@ -1,0 +1,117 @@
+# cAdvisor Service — стабильная точка сбора метрик контейнеров (containerd)
+apiVersion: v1
+kind: Service
+metadata:
+  name: cadvisor
+  namespace: monitoring
+  labels:
+    k8s-app: cadvisor-monitoring
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8080"
+spec:
+  clusterIP: None  # Headless: Prometheus обнаруживает каждый под DaemonSet отдельно
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
+  selector:
+    k8s-app: cadvisor-monitoring
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: cadvisor
+  namespace: monitoring
+  labels:
+    k8s-app: cadvisor-monitoring
+spec:
+  selector:
+    matchLabels:
+      k8s-app: cadvisor-monitoring
+  template:
+    metadata:
+      labels:
+        k8s-app: cadvisor-monitoring
+      annotations:
+        # Метки для автоматического обнаружения Prometheus (см. prometheus-config.yaml)
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+    spec:
+      serviceAccountName: cadvisor
+      tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
+      containers:
+      - name: cadvisor
+        image: gcr.io/cadvisor/cadvisor:v0.49.1
+        imagePullPolicy: IfNotPresent
+        args:
+          # Используем containerd вместо docker
+          - --containerd=/run/containerd/containerd.sock
+          - --docker= # Отключаем подключение к docker, оставляя пустым
+          - --store_container_labels=false
+          - --housekeeping_interval=15s
+          - --port=8080
+        ports:
+          - name: http
+            containerPort: 8080
+            protocol: TCP
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 300m
+            memory: 256Mi
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: rootfs
+          mountPath: /rootfs
+          readOnly: true
+        - name: var-run
+          mountPath: /var/run
+          readOnly: true
+        - name: sys
+          mountPath: /sys
+          readOnly: true
+        # Корень файловой системы containerd (вместо /var/lib/docker)
+        - name: containerd-libs
+          mountPath: /var/lib/containerd
+          readOnly: true
+        # Сокет containerd (вместо docker.sock)
+        - name: containerd-sock
+          mountPath: /run/containerd/containerd.sock
+          readOnly: true
+        - name: disk
+          mountPath: /dev/disk
+          readOnly: true
+      automountServiceAccountToken: true
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: rootfs
+        hostPath:
+          path: /
+      - name: var-run
+        hostPath:
+          path: /var/run
+      - name: sys
+        hostPath:
+          path: /sys
+      # Данные контейнеров хранятся containerd, а не docker
+      - name: containerd-libs
+        hostPath:
+          path: /var/lib/containerd
+      - name: containerd-sock
+        hostPath:
+          path: /run/containerd/containerd.sock
+          type: Socket
+      - name: disk
+        hostPath:
+          path: /dev/disk
