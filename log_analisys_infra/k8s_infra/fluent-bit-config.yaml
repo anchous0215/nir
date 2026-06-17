@@ -41,7 +41,7 @@ data:
     [FILTER]
         Name                grep
         Match               *
-        Regex               kubernetes['namespace_name'] ^study$
+        Regex               $kubernetes['namespace_name'] ^study$
 
     # Возвращаем вывод в стандартный поток (консоль пода Fluent Bit)
     [OUTPUT]
