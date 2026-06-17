@@ -1,5 +1,9 @@
 #!/bin/bash
 
+CONTAINERD_NAMESPACE="k8s.io"
+NERDCTL="nerdctl --namespace ${CONTAINERD_NAMESPACE}"
+
+declare -A images
 images["attacks/01_sudo_bruteforce"]="sudo-bruteforce"
 images["attacks/02_grep_password"]="grep-password"
 images["attacks/03_packet_capture"]="packet-capture"
@@ -15,7 +19,7 @@ for dir in "${!images[@]}"; do
   if [ -d "$dir" ]; then
     IMAGE_NAME="attack-image-${images[$dir]}:latest"
     echo ">>> Building $IMAGE_NAME in $dir..."
-    (cd "$dir" && docker build -t "$IMAGE_NAME" .)
+    (cd "$dir" && ${NERDCTL} build -t "$IMAGE_NAME" .)
     echo ">>> Done building $IMAGE_NAME."
     echo
   fi

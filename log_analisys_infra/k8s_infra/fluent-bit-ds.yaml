@@ -32,8 +32,8 @@ spec:
         - name: varlog
           mountPath: /var/log
           readOnly: true
-        - name: varlibdockercontainers
-          mountPath: /var/lib/docker/containers
+        - name: varlibcontainerd
+          mountPath: /var/lib/containerd
           readOnly: true
         - name: fluent-bit-config
           mountPath: /fluent-bit/etc/
@@ -43,9 +43,9 @@ spec:
       - name: varlog
         hostPath:
           path: /var/log
-      - name: varlibdockercontainers
+      - name: varlibcontainerd
         hostPath:
-          path: /var/lib/docker/containers
+          path: /var/lib/containerd
       - name: fluent-bit-config
         configMap:
           name: fluent-bit-config

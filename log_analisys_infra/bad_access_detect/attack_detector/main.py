@@ -123,6 +123,14 @@ def cmd_detect(args: argparse.Namespace) -> int:
         utils.write_json_report(records, args.report)
         logger.info("JSON report written to %s", args.report)
 
+    if args.push_loki:
+        pushed = utils.push_records_to_loki(
+            records,
+            loki_url=args.loki_url,
+            only_attacks=args.push_attacks_only,
+        )
+        logger.info("Pushed %d window result(s) to Loki at %s", pushed, args.loki_url)
+
     return 0
 
 def build_parser() -> argparse.ArgumentParser:
@@ -157,6 +165,16 @@ def build_parser() -> argparse.ArgumentParser:
     add_source_opts(p_detect)
     p_detect.add_argument("--profile", required=True, help="path to the pickled profile")
     p_detect.add_argument("--report", help="optional path for the JSON report")
+    p_detect.add_argument(
+        "--push-loki",
+        action="store_true",
+        help="push per-window detection results back to Loki (like script.py)",
+    )
+    p_detect.add_argument(
+        "--push-attacks-only",
+        action="store_true",
+        help="when pushing to Loki, send only windows flagged as attacks",
+    )
     p_detect.set_defaults(func=cmd_detect)
 
     return parser

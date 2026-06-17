@@ -203,6 +203,100 @@ def format_window_line(record: Dict[str, Any]) -> str:
     )
 
 
+def push_to_loki(
+    record: Dict[str, Any],
+    loki_url: str = LOKI_URL,
+    job: str = "attack-detector",
+) -> None:
+    """
+    Push a single detection-window result back into Loki via its push API.
+
+    Mirrors the approach used in ``script.py``: each detection becomes a Loki
+    stream labelled with ``job``/``severity``/``pod``, and the log line carries
+    the χ² statistics as a JSON payload.
+    """
+    import time
+
+    import requests 
+
+    ts = record["window_start"]
+    if isinstance(ts, datetime):
+        ts_ns = int(ts.replace(tzinfo=timezone.utc).timestamp() * 1e9)
+    else:
+        ts_ns = int(time.time() * 1e9)
+
+    severity = "critical" if record.get("is_attack") else "info"
+    pod = str(record.get("top_pod") or "unknown")
+
+    payload = {
+        "streams": [
+            {
+                "stream": {
+                    "job": job,
+                    "severity": severity,
+                    "pod": pod,
+                },
+                "values": [
+                    [
+                        str(ts_ns),
+                        json.dumps(
+                            {
+                                "message": (
+                                    "Attack detected by chi2 detector"
+                                    if record.get("is_attack")
+                                    else "Window analysed: normal"
+                                ),
+                                "pod": pod,
+                                "chi2": round(float(record["chi2"]), 4),
+                                "chi2_crit": round(float(record["chi2_crit"]), 4),
+                                "df": int(record["df"]),
+                                "is_attack": bool(record["is_attack"]),
+                                "filtered_events_count": int(
+                                    record["filtered_events_count"]
+                                ),
+                            },
+                            ensure_ascii=False,
+                        ),
+                    ]
+                ],
+            }
+        ]
+    }
+
+    headers = {"Content-Type": "application/json"}
+    resp = requests.post(
+        f"{loki_url}/loki/api/v1/push",
+        headers=headers,
+        data=json.dumps(payload),
+        timeout=30,
+    )
+    resp.raise_for_status()
+
+
+def push_records_to_loki(
+    records: Iterable[Dict[str, Any]],
+    loki_url: str = LOKI_URL,
+    job: str = "attack-detector",
+    only_attacks: bool = False,
+) -> int:
+    """
+    Push multiple detection-window results to Loki.
+
+    Returns the number of records successfully pushed. When ``only_attacks`` is
+    True, normal windows are skipped.
+    """
+    pushed = 0
+    for record in records:
+        if only_attacks and not record.get("is_attack"):
+            continue
+        try:
+            push_to_loki(record, loki_url=loki_url, job=job)
+            pushed += 1
+        except Exception as exc: 
+            logger.warning("Failed to push window %s to Loki: %s", record.get("window_start"), exc)
+    return pushed
+
+
 def write_json_report(records: Iterable[Dict[str, Any]], path: str) -> None:
     """Persist the per-window results as a JSON report."""
     serialisable = []
