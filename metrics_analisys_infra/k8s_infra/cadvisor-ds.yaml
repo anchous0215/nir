@@ -1,4 +1,3 @@
-# cAdvisor Service — стабильная точка сбора метрик контейнеров (containerd)
 apiVersion: v1
 kind: Service
 metadata:
@@ -10,7 +9,7 @@ metadata:
     prometheus.io/scrape: "true"
     prometheus.io/port: "8080"
 spec:
-  clusterIP: None  # Headless: Prometheus обнаруживает каждый под DaemonSet отдельно
+  clusterIP: None
   ports:
   - name: http
     port: 8080
@@ -35,7 +34,6 @@ spec:
       labels:
         k8s-app: cadvisor-monitoring
       annotations:
-        # Метки для автоматического обнаружения Prometheus (см. prometheus-config.yaml)
         prometheus.io/scrape: "true"
         prometheus.io/port: "8080"
     spec:
@@ -52,9 +50,8 @@ spec:
         image: gcr.io/cadvisor/cadvisor:v0.49.1
         imagePullPolicy: IfNotPresent
         args:
-          # Используем containerd вместо docker
           - --containerd=/run/containerd/containerd.sock
-          - --docker= # Отключаем подключение к docker, оставляя пустым
+          - --docker= 
           - --store_container_labels=false
           - --housekeeping_interval=15s
           - --port=8080
@@ -81,11 +78,9 @@ spec:
         - name: sys
           mountPath: /sys
           readOnly: true
-        # Корень файловой системы containerd (вместо /var/lib/docker)
         - name: containerd-libs
           mountPath: /var/lib/containerd
           readOnly: true
-        # Сокет containerd (вместо docker.sock)
         - name: containerd-sock
           mountPath: /run/containerd/containerd.sock
           readOnly: true
@@ -104,7 +99,6 @@ spec:
       - name: sys
         hostPath:
           path: /sys
-      # Данные контейнеров хранятся containerd, а не docker
       - name: containerd-libs
         hostPath:
           path: /var/lib/containerd

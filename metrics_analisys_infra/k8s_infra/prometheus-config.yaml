@@ -6,20 +6,16 @@ metadata:
   labels:
     k8s-app: prometheus
 data:
-  # Основная конфигурация Prometheus
   prometheus.yml: |
     global:
       scrape_interval:     15s
       evaluation_interval: 15s
 
     scrape_configs:
-      # Сам Prometheus
       - job_name: 'prometheus'
         static_configs:
           - targets: ['localhost:9090']
 
-      # cAdvisor: метрики контейнеров (containerd) с каждого узла кластера.
-      # Поды DaemonSet обнаруживаются через kubernetes_sd_configs role: pod.
       - job_name: 'cadvisor'
         kubernetes_sd_configs:
           - role: pod
@@ -27,42 +23,31 @@ data:
               names:
                 - monitoring
         relabel_configs:
-          # Оставляем только поды cAdvisor (по аннотации scrape)
           - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
             action: keep
             regex: "true"
-          # Оставляем только поды DaemonSet cadvisor
           - source_labels: [__meta_kubernetes_pod_label_k8s_app]
             action: keep
             regex: cadvisor-monitoring
-          # Используем порт из аннотации prometheus.io/port
           - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
             action: replace
             regex: ([^:]+)(?::\d+)?;(\d+)
             replacement: $1:$2
             target_label: __address__
-          # Прокидываем имя узла
           - source_labels: [__meta_kubernetes_pod_node_name]
             action: replace
             target_label: node
-          # Прокидываем имя пода
           - source_labels: [__meta_kubernetes_pod_name]
             action: replace
             target_label: pod_name
         metric_relabel_configs:
-          # Сохраняем только метрики файловой системы и CPU, нужные детектору
-          # шифрования (см. metrics_analisys_infra/cipher_detect):
-          #   container_cpu_usage_seconds_total, container_fs_usage_bytes,
-          #   container_fs_io_current, container_fs_inodes_total/free
           - source_labels: [__name__]
             action: keep
             regex: "container_(cpu_usage_seconds_total|fs_usage_bytes|fs_io_current|fs_inodes_total|fs_inodes_free)"
-          # Ограничиваем сбор целевым namespace study (как в log-инфраструктуре)
           - source_labels: [namespace]
             action: keep
             regex: "study"
 
-      # Узловые kubelet/cadvisor встроенные метрики (резервный источник)
       - job_name: 'kubernetes-nodes-cadvisor'
         scheme: https
         tls_config:
